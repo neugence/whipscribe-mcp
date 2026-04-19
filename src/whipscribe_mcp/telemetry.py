@@ -143,14 +143,14 @@ def emit(
         )
     except httpx.HTTPError:
         log.debug("telemetry_send_failed", tool=tool)
-    except Exception:  # noqa: BLE001 — telemetry must never break a tool call
+    except Exception:
         log.debug("telemetry_unexpected", tool=tool)
 
 
 __all__ = [
+    "PUBLIC_SALT",
     "TELEMETRY_ENDPOINT",
     "TELEMETRY_TIMEOUT_SECONDS",
-    "PUBLIC_SALT",
     "emit",
     "install_hash",
     "is_enabled",

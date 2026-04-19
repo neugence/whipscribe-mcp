@@ -152,9 +152,9 @@ def _parse_retry_after(value: str | None) -> float | None:
 
 def _backoff_delay(attempt: int) -> float:
     """Exponential backoff with jitter for a retry ``attempt`` (0-indexed)."""
-    exp = BACKOFF_BASE_SECONDS * (2 ** attempt)
-    capped = min(exp, BACKOFF_CAP_SECONDS)
-    jitter = random.uniform(0.0, capped * 0.25)
+    exp: float = BACKOFF_BASE_SECONDS * (2 ** attempt)
+    capped: float = min(exp, BACKOFF_CAP_SECONDS)
+    jitter: float = random.uniform(0.0, capped * 0.25)
     return capped + jitter
 
 
@@ -605,7 +605,7 @@ class WhipscribeClient:
         Returns:
             Parsed JSON body with ``status`` (one of ``queued``,
             ``processing``, ``done``, ``failed``), optional ``progress``
-            (0.0 – 1.0), ``audio_duration_seconds``, ``language``,
+            (0.0 - 1.0), ``audio_duration_seconds``, ``language``,
             ``source``, and ``error`` fields. Recommended polling
             cadence is 3 seconds while status is ``queued`` or
             ``processing``.
@@ -687,7 +687,7 @@ class WhipscribeClient:
 
         Args:
             limit: Maximum number of jobs to return. Clamped to the
-                backend's documented range of 1–100.
+                backend's documented range of 1-100.
 
         Returns:
             A list of job summary dicts, newest first. Each entry
@@ -840,8 +840,8 @@ class WhipscribeClient:
 
 __all__ = [
     "DEFAULT_API_BASE",
-    "DEFAULT_TIMEOUT_SECONDS",
     "DEFAULT_CONNECT_TIMEOUT_SECONDS",
+    "DEFAULT_TIMEOUT_SECONDS",
     "MAX_RETRIES",
     "SourceKind",
     "Tier",

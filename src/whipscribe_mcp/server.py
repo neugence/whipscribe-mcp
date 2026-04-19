@@ -22,7 +22,8 @@ from mcp.server import Server
 from mcp.server.stdio import stdio_server
 from mcp.types import TextContent, Tool
 
-from . import __version__, tools as tool_handlers
+from . import __version__
+from . import tools as tool_handlers
 from .cache import JobCache
 from .client import WhipscribeClient
 from .errors import BETA_NOTICE, ErrorObject, ToolError
@@ -50,7 +51,10 @@ _TOOL_DEFINITIONS: list[Tool] = [
                 },
                 "language": {
                     "type": ["string", "null"],
-                    "description": "ISO 639-1 language code (e.g. 'en', 'es'). Auto-detect when omitted.",
+                    "description": (
+                        "ISO 639-1 language code (e.g. 'en', 'es'). "
+                        "Auto-detect when omitted."
+                    ),
                 },
                 "diarize": {
                     "type": "boolean",
@@ -186,11 +190,11 @@ def build_server(
     """Construct an MCP :class:`Server` bound to the given client and cache."""
     server: Server = Server(SERVER_NAME)
 
-    @server.list_tools()
+    @server.list_tools()  # type: ignore[no-untyped-call, untyped-decorator]
     async def _list_tools() -> list[Tool]:
         return list(_TOOL_DEFINITIONS)
 
-    @server.call_tool()
+    @server.call_tool()  # type: ignore[untyped-decorator]
     async def _call_tool(name: str, arguments: dict[str, Any] | None) -> list[TextContent]:
         args = arguments or {}
         start = time.perf_counter()
@@ -207,7 +211,7 @@ def build_server(
         except ToolError as exc:
             error_code = exc.code
             return _serialize(_failure_payload(exc))
-        except Exception as exc:  # noqa: BLE001 — must not cross MCP boundary
+        except Exception as exc:
             error_code = "unknown_error"
             log.error(
                 "tool_unhandled_exception",
@@ -232,7 +236,7 @@ async def _dispatch(
     *,
     client: WhipscribeClient,
     cache: JobCache,
-) -> dict[str, Any]:
+) -> Any:
     if name == "transcribe_url":
         return await tool_handlers.transcribe_url(
             args["url"],
@@ -292,4 +296,4 @@ def run_stdio() -> None:
     asyncio.run(_serve())
 
 
-__all__ = ["build_server", "run_stdio", "SERVER_NAME"]
+__all__ = ["SERVER_NAME", "build_server", "run_stdio"]

@@ -16,7 +16,6 @@ import pytest
 
 from whipscribe_mcp import telemetry
 
-
 _INSTALL_HASH_RE = re.compile(r"^[0-9a-f]{16}$")
 _ALLOWED_PARAM_NAMES = {"tool", "duration_ms", "error_code", "version"}
 
@@ -69,7 +68,7 @@ class TestInstallHash:
 
     def test_install_hash_rotates_on_id_deletion(self, tmp_path: Path) -> None:
         first = telemetry.install_hash()
-        id_path = telemetry._install_id_path()  # noqa: SLF001 — testing internal
+        id_path = telemetry._install_id_path()
         if id_path.exists():
             id_path.unlink()
         second = telemetry.install_hash()

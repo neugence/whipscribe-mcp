@@ -22,6 +22,7 @@ Each handler:
 from __future__ import annotations
 
 import asyncio
+import contextlib
 import hashlib
 import os
 import re
@@ -241,10 +242,8 @@ async def transcribe_url(
         )
 
     if cache is not None:
-        try:
+        with contextlib.suppress(OSError):
             await cache.record_job(job_id=job_id, source="url", status="queued")
-        except OSError:
-            pass
 
     try:
         status, status_payload = await _poll_until_done(client, job_id, cache)
@@ -329,10 +328,8 @@ async def transcribe_file(
         )
 
     if cache is not None:
-        try:
+        with contextlib.suppress(OSError):
             await cache.record_job(job_id=job_id, source="file", status="queued")
-        except OSError:
-            pass
 
     try:
         status, status_payload = await _poll_until_done(client, job_id, cache)
@@ -391,10 +388,8 @@ async def get_job_status(
         duration_sec = None
 
     if cache is not None:
-        try:
+        with contextlib.suppress(OSError):
             await cache.update_status(job_id, status, duration_sec=duration_sec)
-        except OSError:
-            pass
 
     success: ToolSuccess = {
         "ok": True,
@@ -468,22 +463,26 @@ async def list_recent_jobs(
         bounded = max(1, min(100, int(limit)))
     except (TypeError, ValueError):
         return _failure(
-            ToolError("invalid_input", "limit must be an integer 1–100.", retryable=False)
+            ToolError("invalid_input", "limit must be an integer 1-100.", retryable=False)
         )
 
     try:
         rows = await cache.list_recent(bounded)
     except OSError as exc:
         return _failure(
-            ToolError("server_error", f"Local cache unavailable: {exc.__class__.__name__}", retryable=True)
+            ToolError(
+                "server_error",
+                f"Local cache unavailable: {exc.__class__.__name__}",
+                retryable=True,
+            )
         )
 
     jobs: list[RecentJobPublic] = [
         {
             "job_id": row["job_id"],
             "created_at": row["created_at"],
-            "status": row["status"],  # type: ignore[typeddict-item]
-            "source": row["source"],  # type: ignore[typeddict-item]
+            "status": row["status"],
+            "source": row["source"],
             "duration_sec": row["duration_sec"],
         }
         for row in rows
@@ -492,17 +491,17 @@ async def list_recent_jobs(
 
 
 __all__ = [
-    "TranscriptFormat",
     "JobStatus",
-    "ToolResult",
-    "ToolSuccess",
-    "ToolFailure",
-    "RecentJobPublic",
     "ListJobsResult",
     "ListJobsSuccess",
-    "transcribe_url",
-    "transcribe_file",
+    "RecentJobPublic",
+    "ToolFailure",
+    "ToolResult",
+    "ToolSuccess",
+    "TranscriptFormat",
     "get_job_status",
     "get_transcript",
     "list_recent_jobs",
+    "transcribe_file",
+    "transcribe_url",
 ]

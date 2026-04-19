@@ -10,15 +10,13 @@ Focus areas:
 
 from __future__ import annotations
 
-import json
 import re
 
-import httpx
 import pytest
 
 from whipscribe_mcp.client import (
-    WhipscribeClient,
     _IDEMPOTENCY_KEY_RE,
+    WhipscribeClient,
     _validate_idempotency_key,
     generate_idempotency_key,
 )
@@ -33,7 +31,13 @@ class TestIdempotencyKey:
 
     @pytest.mark.parametrize(
         "key",
-        ["short-key", "a" * 255, "AbCd_1234", "u-90abcdef", "key:with/slashes.dots-and_underscores"],
+        [
+            "short-key",
+            "a" * 255,
+            "AbCd_1234",
+            "u-90abcdef",
+            "key:with/slashes.dots-and_underscores",
+        ],
     )
     def test_validate_accepts_documented_charset(self, key: str) -> None:
         _validate_idempotency_key(key)
@@ -52,8 +56,8 @@ class TestAuthHeader:
     def test_no_auth_header_when_no_key(self) -> None:
         client = WhipscribeClient(api_base="https://example.local/v1")
         try:
-            assert "X-API-Key" not in client._client.headers  # noqa: SLF001
-            assert "Authorization" not in client._client.headers  # noqa: SLF001
+            assert "X-API-Key" not in client._client.headers
+            assert "Authorization" not in client._client.headers
         finally:
             # Sync close is fine for an unused AsyncClient.
             pass
@@ -63,10 +67,10 @@ class TestAuthHeader:
             api_base="https://example.local/v1",
             api_key="sk-test-key",
         )
-        assert client._client.headers.get("X-API-Key") == "sk-test-key"  # noqa: SLF001
+        assert client._client.headers.get("X-API-Key") == "sk-test-key"
         # Bearer is reserved for Firebase id-tokens per the API docs;
         # the API key must NEVER be sent as Bearer.
-        auth_header = client._client.headers.get("Authorization", "")  # noqa: SLF001
+        auth_header = client._client.headers.get("Authorization", "")
         assert "Bearer" not in auth_header
         assert "sk-test-key" not in auth_header
 
