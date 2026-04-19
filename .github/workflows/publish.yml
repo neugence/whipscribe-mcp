@@ -1,0 +1,61 @@
+# Publishes whipscribe-mcp to PyPI on every git tag matching v*.
+#
+# Prerequisites — one-time setup on PyPI:
+#   1. PyPI account at pypi.org with 2FA enabled.
+#   2. PyPI project page → Settings → Publishing → Add a trusted publisher.
+#      Owner: neugence, Repository: whipscribe-mcp, Workflow: publish.yml,
+#      Environment: pypi.
+#   3. GitHub repo → Settings → Environments → create environment "pypi"
+#      (optionally with protection rules).
+#
+# Per-release process:
+#   1. Bump version in pyproject.toml.
+#   2. Update CHANGELOG.md.
+#   3. git tag v0.1.0 && git push --tags.
+#   4. Create a GitHub Release from the tag — this workflow runs.
+
+name: Publish to PyPI
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build sdist + wheel
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+
+      - name: Build distribution
+        run: uv build
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+  publish:
+    name: Publish to PyPI (trusted publisher)
+    needs: build
+    runs-on: ubuntu-latest
+    environment: pypi
+    permissions:
+      id-token: write
+    steps:
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+      - name: Publish
+        uses: pypa/gh-action-pypi-publish@release/v1
