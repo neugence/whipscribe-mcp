@@ -2,16 +2,16 @@
 
 from __future__ import annotations
 
+import sys
+
+from .server import run_stdio
+
 
 def main() -> None:
-    """Run the Whipscribe MCP stdio server.
-
-    v0.1.0 is a signature-only scaffold. The MCP SDK wiring that binds the
-    tool handlers to a stdio transport lands in a follow-up change.
-    """
-    raise NotImplementedError(
-        "whipscribe-mcp v0.1.0 scaffold. MCP transport wiring ships in the next release."
-    )
+    try:
+        run_stdio()
+    except KeyboardInterrupt:
+        sys.exit(0)
 
 
 if __name__ == "__main__":

@@ -102,6 +102,8 @@ On failure:
 | `WHIPSCRIBE_API_KEY` | No | — | API key (unlocks paid quota; anonymous free tier works without it) |
 | `WHIPSCRIBE_API_BASE` | No | `https://whipscribe.com/api/v1` | Override API base URL (e.g. for staging) |
 | `WHIPSCRIBE_MCP_TELEMETRY` | No | `1` | Set to `0` to disable anonymous usage telemetry |
+| `WHIPSCRIBE_MCP_POLL_TIMEOUT_SECONDS` | No | `600` | Max seconds `transcribe_url` / `transcribe_file` waits before returning the job_id with a non-terminal status |
+| `WHIPSCRIBE_MCP_POLL_INTERVAL_SECONDS` | No | `3` | Seconds between job-status polls during transcription |
 
 ## Privacy
 
