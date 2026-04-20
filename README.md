@@ -58,12 +58,6 @@ Optional: set `WHIPSCRIBE_API_KEY` in `env` to unlock paid quota.
 
 Restart Claude Desktop. Type "transcribe this podcast URL: …" and Claude will call the tool.
 
-## How it works
-
-You ask Claude to transcribe something. Claude picks the right MCP tool, sends the URL or file to Whipscribe, and returns a preview plus a link to the full transcript hosted at `whipscribe.com/view?id=…`.
-
-![End-to-end flow: a user prompt in Claude routes through whipscribe-mcp, Whipscribe runs transcription, Claude returns a preview and a link to the full transcript](docs/images/use_case_1.png)
-
 ## Tools
 
 | Tool | Description |
