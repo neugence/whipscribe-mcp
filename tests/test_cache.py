@@ -112,3 +112,42 @@ class TestJobCache:
             # Re-recording without a token must not clobber the existing one.
             await cache.record_job(job_id="j1", source="url", status="done")
             assert await cache.get_claim_token("j1") == "tok-abc-123"
+
+    @pytest.mark.asyncio
+    async def test_upgrade_from_pre_claim_token_schema(self, cache_path: Path) -> None:
+        """Simulate a DB written by a pre-claim_token whipscribe-mcp install.
+
+        On open, the cache must ALTER TABLE in the missing column so that the
+        first record_job/get_claim_token call doesn't raise ``OperationalError:
+        no such column: claim_token``.
+        """
+        import sqlite3
+
+        legacy = sqlite3.connect(cache_path)
+        legacy.executescript(
+            """
+            CREATE TABLE jobs (
+                job_id TEXT PRIMARY KEY,
+                source TEXT NOT NULL,
+                status TEXT NOT NULL,
+                duration_sec REAL,
+                created_at TEXT NOT NULL
+            );
+            INSERT INTO jobs VALUES ('legacy-job', 'url', 'done', 12.5,
+                                     '2026-04-18T10:00:00+00:00');
+            """
+        )
+        legacy.commit()
+        legacy.close()
+
+        async with JobCache(cache_path) as cache:
+            await cache.record_job(
+                job_id="new-job",
+                source="url",
+                claim_token="tok-post-upgrade",
+            )
+            assert await cache.get_claim_token("new-job") == "tok-post-upgrade"
+            assert await cache.get_claim_token("legacy-job") is None
+            rows = await cache.list_recent(10)
+            ids = {r["job_id"] for r in rows}
+            assert ids == {"legacy-job", "new-job"}

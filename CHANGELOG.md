@@ -7,11 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.1] — 2026-04-20
+
 ### Fixed
 - Anonymous-tier `transcribe_url` / `transcribe_file` now propagate the `claim_token` returned by `POST /transcribe[/url]` through to subsequent `GET /jobs/{id}` and `GET /jobs/{id}/result` polls via the `X-Claim-Token` header. Previously the token was dropped on the floor and anonymous polls returned `404 job_not_found` even though the backend had accepted the submission and was processing it.
 
 ### Changed
-- Local SQLite cache schema gained a `claim_token` column. **Beta upgrade note:** delete `~/.whipscribe-mcp/jobs.db` before upgrading from a previous beta install — there is no automatic migration in the 0.1.x line.
+- Local SQLite cache schema gained a `claim_token` column with **automatic in-place migration** for databases created by 0.1.0. No user action required — the cache opens existing 0.1.0 databases, detects the missing column via `PRAGMA table_info`, runs `ALTER TABLE jobs ADD COLUMN claim_token TEXT`, and continues. Pre-0.1.1 jobs simply have a `NULL` claim_token (they wouldn't have worked anonymously anyway because of the bug above; new submissions store the token correctly).
 
 ## [0.1.0] — 2026-04-19
 
@@ -32,5 +34,6 @@ Initial beta release.
 - Not suitable for production use cases where transcription failure has legal, safety, or financial consequences.
 - See [`whipscribe.com/terms`](https://whipscribe.com/terms) for the full terms of service.
 
-[Unreleased]: https://github.com/neugence/whipscribe-mcp/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/neugence/whipscribe-mcp/compare/v0.1.1...HEAD
+[0.1.1]: https://github.com/neugence/whipscribe-mcp/releases/tag/v0.1.1
 [0.1.0]: https://github.com/neugence/whipscribe-mcp/releases/tag/v0.1.0

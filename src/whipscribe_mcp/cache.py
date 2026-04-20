@@ -49,6 +49,22 @@ CREATE TABLE IF NOT EXISTS jobs (
 CREATE INDEX IF NOT EXISTS idx_jobs_created_at ON jobs(created_at DESC);
 """
 
+# Idempotent column additions for databases created by older whipscribe-mcp
+# versions. SQLite has no `ADD COLUMN IF NOT EXISTS`, so we probe PRAGMA
+# table_info first. The CREATE TABLE above covers fresh installs; this list
+# covers in-place upgrades where the row existed before a column did.
+_COLUMN_ADDITIONS: tuple[tuple[str, str], ...] = (
+    ("claim_token", "TEXT"),
+)
+
+
+def _migrate_jobs_table(conn: sqlite3.Connection) -> None:
+    existing = {row["name"] for row in conn.execute("PRAGMA table_info(jobs)")}
+    for column, ddl_type in _COLUMN_ADDITIONS:
+        if column in existing:
+            continue
+        conn.execute(f"ALTER TABLE jobs ADD COLUMN {column} {ddl_type}")
+
 
 class RecentJob(TypedDict):
     job_id: str
@@ -112,6 +128,7 @@ class JobCache:
                 )
                 conn.row_factory = sqlite3.Row
                 conn.executescript(_SCHEMA)
+                _migrate_jobs_table(conn)
                 return conn
 
             try:
