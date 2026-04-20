@@ -163,6 +163,56 @@ class TestRetryAndErrors:
         assert exc.value.code == "quota_exceeded"
 
 
+class TestClaimTokenHeader:
+    @pytest.mark.asyncio
+    async def test_x_claim_token_sent_when_provided_to_get_job_status(
+        self,
+        httpx_mock,  # type: ignore[no-untyped-def]
+    ) -> None:
+        httpx_mock.add_response(
+            method="GET",
+            url="https://example.local/v1/jobs/anon-job",
+            json={"status": "processing"},
+        )
+        async with WhipscribeClient(api_base="https://example.local/v1") as client:
+            await client.get_job_status("anon-job", claim_token="tok-xyz-789")
+        request = httpx_mock.get_requests()[0]
+        assert request.headers.get("X-Claim-Token") == "tok-xyz-789"
+
+    @pytest.mark.asyncio
+    async def test_x_claim_token_sent_when_provided_to_get_transcript(
+        self,
+        httpx_mock,  # type: ignore[no-untyped-def]
+    ) -> None:
+        httpx_mock.add_response(
+            method="GET",
+            url=re.compile(r"^https://example.local/v1/jobs/anon-job/result\?format=txt$"),
+            text="hello",
+        )
+        async with WhipscribeClient(api_base="https://example.local/v1") as client:
+            await client.get_transcript("anon-job", format="txt", claim_token="tok-xyz-789")
+        request = httpx_mock.get_requests()[0]
+        assert request.headers.get("X-Claim-Token") == "tok-xyz-789"
+
+    @pytest.mark.asyncio
+    async def test_no_claim_token_header_when_omitted(
+        self,
+        httpx_mock,  # type: ignore[no-untyped-def]
+    ) -> None:
+        httpx_mock.add_response(
+            method="GET",
+            url="https://example.local/v1/jobs/keyed-job",
+            json={"status": "done"},
+        )
+        async with WhipscribeClient(
+            api_base="https://example.local/v1",
+            api_key="sk-test",
+        ) as client:
+            await client.get_job_status("keyed-job")
+        request = httpx_mock.get_requests()[0]
+        assert "X-Claim-Token" not in request.headers
+
+
 class TestGetTranscript:
     @pytest.mark.asyncio
     async def test_txt_returns_str(self, httpx_mock) -> None:  # type: ignore[no-untyped-def]

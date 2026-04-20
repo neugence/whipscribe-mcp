@@ -83,3 +83,32 @@ class TestJobCache:
         async with JobCache(nested) as cache:
             await cache.record_job(job_id="j1", source="url")
         assert nested.exists()
+
+    @pytest.mark.asyncio
+    async def test_claim_token_round_trip(self, cache_path: Path) -> None:
+        async with JobCache(cache_path) as cache:
+            await cache.record_job(
+                job_id="j1",
+                source="url",
+                claim_token="tok-abc-123",
+            )
+            assert await cache.get_claim_token("j1") == "tok-abc-123"
+
+    @pytest.mark.asyncio
+    async def test_claim_token_missing_returns_none(self, cache_path: Path) -> None:
+        async with JobCache(cache_path) as cache:
+            await cache.record_job(job_id="j1", source="url")
+            assert await cache.get_claim_token("j1") is None
+            assert await cache.get_claim_token("j-unknown") is None
+
+    @pytest.mark.asyncio
+    async def test_claim_token_preserved_on_status_update(self, cache_path: Path) -> None:
+        async with JobCache(cache_path) as cache:
+            await cache.record_job(
+                job_id="j1",
+                source="url",
+                claim_token="tok-abc-123",
+            )
+            # Re-recording without a token must not clobber the existing one.
+            await cache.record_job(job_id="j1", source="url", status="done")
+            assert await cache.get_claim_token("j1") == "tok-abc-123"

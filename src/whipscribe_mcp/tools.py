@@ -159,13 +159,14 @@ async def _poll_until_done(
     client: WhipscribeClient,
     job_id: str,
     cache: JobCache | None,
+    claim_token: str | None = None,
 ) -> tuple[JobStatus, dict[str, Any]]:
     """Poll ``get_job_status`` until terminal or until the poll timeout elapses."""
     deadline = time.monotonic() + _poll_timeout_seconds()
     interval = _poll_interval_seconds()
 
     while True:
-        payload = await client.get_job_status(job_id)
+        payload = await client.get_job_status(job_id, claim_token=claim_token)
         status = _normalize_status(payload.get("status"))
 
         if cache is not None:
@@ -185,9 +186,13 @@ async def _poll_until_done(
         await asyncio.sleep(interval)
 
 
-async def _fetch_preview(client: WhipscribeClient, job_id: str) -> str:
+async def _fetch_preview(
+    client: WhipscribeClient,
+    job_id: str,
+    claim_token: str | None = None,
+) -> str:
     try:
-        body = await client.get_transcript(job_id, format="txt")
+        body = await client.get_transcript(job_id, format="txt", claim_token=claim_token)
     except ToolError as exc:
         log.warning("transcript_preview_unavailable", error_code=exc.code)
         return ""
@@ -240,13 +245,22 @@ async def transcribe_url(
         return _failure(
             ToolError("server_error", "Backend did not return a job_id.", retryable=True)
         )
+    raw_claim_token = submission.get("claim_token")
+    claim_token: str | None = raw_claim_token if isinstance(raw_claim_token, str) else None
 
     if cache is not None:
         with contextlib.suppress(OSError):
-            await cache.record_job(job_id=job_id, source="url", status="queued")
+            await cache.record_job(
+                job_id=job_id,
+                source="url",
+                status="queued",
+                claim_token=claim_token,
+            )
 
     try:
-        status, status_payload = await _poll_until_done(client, job_id, cache)
+        status, status_payload = await _poll_until_done(
+            client, job_id, cache, claim_token=claim_token,
+        )
     except ToolError as exc:
         return _failure(exc)
 
@@ -261,7 +275,11 @@ async def transcribe_url(
         message = backend_error if isinstance(backend_error, str) else "Job failed."
         return _failure(ToolError("job_failed", message, retryable=False))
 
-    preview = await _fetch_preview(client, job_id) if status == "done" else ""
+    preview = (
+        await _fetch_preview(client, job_id, claim_token=claim_token)
+        if status == "done"
+        else ""
+    )
 
     success: ToolSuccess = {
         "ok": True,
@@ -326,13 +344,22 @@ async def transcribe_file(
         return _failure(
             ToolError("server_error", "Backend did not return a job_id.", retryable=True)
         )
+    raw_claim_token = submission.get("claim_token")
+    claim_token: str | None = raw_claim_token if isinstance(raw_claim_token, str) else None
 
     if cache is not None:
         with contextlib.suppress(OSError):
-            await cache.record_job(job_id=job_id, source="file", status="queued")
+            await cache.record_job(
+                job_id=job_id,
+                source="file",
+                status="queued",
+                claim_token=claim_token,
+            )
 
     try:
-        status, status_payload = await _poll_until_done(client, job_id, cache)
+        status, status_payload = await _poll_until_done(
+            client, job_id, cache, claim_token=claim_token,
+        )
     except ToolError as exc:
         return _failure(exc)
 
@@ -347,7 +374,11 @@ async def transcribe_file(
         message = backend_error if isinstance(backend_error, str) else "Job failed."
         return _failure(ToolError("job_failed", message, retryable=False))
 
-    preview = await _fetch_preview(client, job_id) if status == "done" else ""
+    preview = (
+        await _fetch_preview(client, job_id, claim_token=claim_token)
+        if status == "done"
+        else ""
+    )
 
     success: ToolSuccess = {
         "ok": True,
@@ -375,8 +406,13 @@ async def get_job_status(
             ToolError("invalid_input", "job_id must be a non-empty string.", retryable=False)
         )
 
+    claim_token: str | None = None
+    if cache is not None:
+        with contextlib.suppress(OSError):
+            claim_token = await cache.get_claim_token(job_id)
+
     try:
-        payload = await client.get_job_status(job_id)
+        payload = await client.get_job_status(job_id, claim_token=claim_token)
     except ToolError as exc:
         return _failure(exc)
 
@@ -407,6 +443,7 @@ async def get_transcript(
     job_id: str,
     *,
     client: WhipscribeClient,
+    cache: JobCache | None = None,
     format: TranscriptFormat = "txt",
 ) -> ToolResult:
     """Fetch a finished transcript in the requested format.
@@ -421,8 +458,13 @@ async def get_transcript(
             ToolError("invalid_input", "job_id must be a non-empty string.", retryable=False)
         )
 
+    claim_token: str | None = None
+    if cache is not None:
+        with contextlib.suppress(OSError):
+            claim_token = await cache.get_claim_token(job_id)
+
     try:
-        body = await client.get_transcript(job_id, format=format)
+        body = await client.get_transcript(job_id, format=format, claim_token=claim_token)
     except ToolError as exc:
         return _failure(exc)
 

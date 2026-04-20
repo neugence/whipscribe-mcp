@@ -242,6 +242,7 @@ class WhipscribeClient:
         data: dict[str, Any] | None = None,
         expected_statuses: tuple[int, ...] = (200,),
         idempotency_key: str | None = None,
+        claim_token: str | None = None,
     ) -> httpx.Response:
         """Issue an HTTP request with retry and structured error mapping.
 
@@ -262,6 +263,10 @@ class WhipscribeClient:
                 header. The same key is used across all retry attempts so
                 the backend can deduplicate. Required for safe retries on
                 non-idempotent POSTs (``/transcribe``, ``/transcribe/url``).
+            claim_token: When set, sent as the ``X-Claim-Token`` header.
+                Required to authorize lookups against jobs submitted
+                anonymously (no ``WHIPSCRIBE_API_KEY``); the backend
+                returns ``404`` if the token is missing on such requests.
 
         Returns:
             The successful :class:`httpx.Response`.
@@ -272,10 +277,12 @@ class WhipscribeClient:
         start = time.monotonic()
         last_error: ToolError | None = None
 
-        request_headers: dict[str, str] | None = None
+        request_headers: dict[str, str] = {}
         if idempotency_key is not None:
             _validate_idempotency_key(idempotency_key)
-            request_headers = {"Idempotency-Key": idempotency_key}
+            request_headers["Idempotency-Key"] = idempotency_key
+        if claim_token is not None:
+            request_headers["X-Claim-Token"] = claim_token
 
         for attempt in range(self._max_retries + 1):
             try:
@@ -286,7 +293,7 @@ class WhipscribeClient:
                     params=params,
                     files=files,
                     data=data,
-                    headers=request_headers,
+                    headers=request_headers or None,
                 )
             except httpx.TimeoutException as exc:
                 last_error = ToolError(
@@ -595,12 +602,22 @@ class WhipscribeClient:
             )
         return result
 
-    async def get_job_status(self, job_id: str) -> dict[str, Any]:
+    async def get_job_status(
+        self,
+        job_id: str,
+        *,
+        claim_token: str | None = None,
+    ) -> dict[str, Any]:
         """Fetch current status of a job (``GET /jobs/{job_id}``).
 
         Args:
             job_id: Identifier returned by :meth:`submit_url` or
                 :meth:`submit_file`.
+            claim_token: Required for jobs submitted anonymously (no
+                ``WHIPSCRIBE_API_KEY``). The token is returned in the
+                submission response and must be sent on every poll —
+                otherwise the backend returns ``404`` regardless of
+                whether the job exists.
 
         Returns:
             Parsed JSON body with ``status`` (one of ``queued``,
@@ -624,6 +641,7 @@ class WhipscribeClient:
             "GET",
             f"/jobs/{job_id}",
             endpoint_name="get_job_status",
+            claim_token=claim_token,
         )
         result = self._parse_json(response, endpoint_name="get_job_status")
         if not isinstance(result, dict):
@@ -639,6 +657,7 @@ class WhipscribeClient:
         job_id: str,
         *,
         format: TranscriptFormat = "txt",
+        claim_token: str | None = None,
     ) -> dict[str, Any] | str:
         """Download a transcript (``GET /jobs/{job_id}/result``).
 
@@ -648,6 +667,8 @@ class WhipscribeClient:
                 ``json`` returns the richest payload (segments, speakers,
                 word-level timing when enabled on the job). Other formats
                 return plain text.
+            claim_token: Required for jobs submitted anonymously (no
+                ``WHIPSCRIBE_API_KEY``); see :meth:`get_job_status`.
 
         Returns:
             For ``format="json"`` a decoded ``dict``. For all other
@@ -669,6 +690,7 @@ class WhipscribeClient:
             f"/jobs/{job_id}/result",
             endpoint_name="get_transcript",
             params={"format": format},
+            claim_token=claim_token,
         )
         if format == "json":
             result = self._parse_json(response, endpoint_name="get_transcript")

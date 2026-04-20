@@ -265,6 +265,7 @@ async def _dispatch(
         return await tool_handlers.get_transcript(
             args["job_id"],
             client=client,
+            cache=cache,
             format=args.get("format", "txt"),
         )
     if name == "list_recent_jobs":

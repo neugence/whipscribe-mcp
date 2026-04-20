@@ -11,6 +11,9 @@ Privacy contract — the cache stores only:
 * ``status`` — ``queued | running | done | failed``
 * ``duration_sec`` — audio length in seconds, when known
 * ``created_at`` — ISO-8601 UTC timestamp of the local submission
+* ``claim_token`` — opaque token returned by anonymous submissions; required
+  to authorize subsequent ``GET /jobs/{id}`` lookups against jobs the caller
+  submitted without an API key. Never surfaced through ``list_recent_jobs``.
 
 It explicitly does **not** store source URLs, local file paths,
 filenames, transcripts, API keys, or any per-job content.
@@ -40,7 +43,8 @@ CREATE TABLE IF NOT EXISTS jobs (
     source TEXT NOT NULL,
     status TEXT NOT NULL,
     duration_sec REAL,
-    created_at TEXT NOT NULL
+    created_at TEXT NOT NULL,
+    claim_token TEXT
 );
 CREATE INDEX IF NOT EXISTS idx_jobs_created_at ON jobs(created_at DESC);
 """
@@ -135,6 +139,7 @@ class JobCache:
         status: JobStatus = "queued",
         duration_sec: float | None = None,
         created_at: str | None = None,
+        claim_token: str | None = None,
     ) -> None:
         """Insert or replace a job row."""
         await self._ensure_open()
@@ -144,18 +149,43 @@ class JobCache:
             assert self._conn is not None
             self._conn.execute(
                 """
-                INSERT INTO jobs (job_id, source, status, duration_sec, created_at)
-                VALUES (?, ?, ?, ?, ?)
+                INSERT INTO jobs (job_id, source, status, duration_sec, created_at, claim_token)
+                VALUES (?, ?, ?, ?, ?, ?)
                 ON CONFLICT(job_id) DO UPDATE SET
                     source = excluded.source,
                     status = excluded.status,
                     duration_sec = COALESCE(excluded.duration_sec, jobs.duration_sec),
-                    created_at = jobs.created_at
+                    created_at = jobs.created_at,
+                    claim_token = COALESCE(excluded.claim_token, jobs.claim_token)
                 """,
-                (job_id, source, status, duration_sec, timestamp),
+                (job_id, source, status, duration_sec, timestamp, claim_token),
             )
 
         await asyncio.to_thread(_write)
+
+    async def get_claim_token(self, job_id: str) -> str | None:
+        """Return the stored ``claim_token`` for ``job_id`` or ``None``.
+
+        Used by tool handlers to authorize subsequent ``GET /jobs/{id}`` /
+        ``GET /jobs/{id}/result`` calls against anonymous-submitted jobs.
+        Never returned through any public MCP-facing surface — claim_token
+        is treated as a per-job secret.
+        """
+        await self._ensure_open()
+
+        def _read() -> str | None:
+            assert self._conn is not None
+            cursor = self._conn.execute(
+                "SELECT claim_token FROM jobs WHERE job_id = ?",
+                (job_id,),
+            )
+            row = cursor.fetchone()
+            if row is None:
+                return None
+            value = row["claim_token"]
+            return value if isinstance(value, str) else None
+
+        return await asyncio.to_thread(_read)
 
     async def update_status(
         self,

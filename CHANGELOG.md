@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- Anonymous-tier `transcribe_url` / `transcribe_file` now propagate the `claim_token` returned by `POST /transcribe[/url]` through to subsequent `GET /jobs/{id}` and `GET /jobs/{id}/result` polls via the `X-Claim-Token` header. Previously the token was dropped on the floor and anonymous polls returned `404 job_not_found` even though the backend had accepted the submission and was processing it.
+
+### Changed
+- Local SQLite cache schema gained a `claim_token` column. **Beta upgrade note:** delete `~/.whipscribe-mcp/jobs.db` before upgrading from a previous beta install — there is no automatic migration in the 0.1.x line.
+
 ## [0.1.0] — 2026-04-19
 
 Initial beta release.
