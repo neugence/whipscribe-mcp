@@ -102,6 +102,17 @@ def _environment_fields() -> dict[str, str]:
     }
 
 
+# Sentinel "tool" name used by :func:`emit_startup` so the backend /
+# Grafana dashboard can distinguish "server booted" from a real
+# tool call. Uses the same ``tool`` column in ``telemetry_events``
+# rather than growing a new event-type enum: simpler schema, trivial
+# to filter out with ``WHERE tool != '_startup'`` in the existing
+# dashboards.
+STARTUP_TOOL_NAME = "_startup"
+
+_startup_emitted = False
+
+
 def emit(
     *,
     tool: str,
@@ -147,11 +158,43 @@ def emit(
         log.debug("telemetry_unexpected", tool=tool)
 
 
+def emit_startup(*, version: str) -> None:
+    """Emit a single per-process startup ping.
+
+    Separates "server booted" from "user called a tool" in the existing
+    ``telemetry_events`` table. Uses the ``_startup`` sentinel in the
+    ``tool`` column so every existing query on the Grafana dashboard can
+    filter it out with ``WHERE tool != '_startup'`` without a schema
+    change.
+
+    Contract:
+        - Guarded by the same ``WHIPSCRIBE_MCP_TELEMETRY`` opt-out as
+          :func:`emit`. Off → no-op.
+        - **Exactly once per process**, even if called multiple times.
+          The module-level flag is reset only by a fresh interpreter.
+        - Never raises. Never writes to stdout. Silent on failure.
+        - ``duration_ms`` is always ``0`` — there is no user-measurable
+          work involved in a startup ping.
+    """
+    global _startup_emitted
+    if _startup_emitted:
+        return
+    _startup_emitted = True
+    emit(
+        tool=STARTUP_TOOL_NAME,
+        duration_ms=0,
+        error_code=None,
+        version=version,
+    )
+
+
 __all__ = [
     "PUBLIC_SALT",
+    "STARTUP_TOOL_NAME",
     "TELEMETRY_ENDPOINT",
     "TELEMETRY_TIMEOUT_SECONDS",
     "emit",
+    "emit_startup",
     "install_hash",
     "is_enabled",
 ]

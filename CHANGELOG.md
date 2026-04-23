@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.2] — 2026-04-23
+
+### Added
+- One-time per-process startup telemetry ping. The server now emits a
+  `tool="_startup"` event to the existing telemetry endpoint when the
+  stdio server begins serving. This lets the usage dashboard separate
+  "server booted" from "user called a tool", which is useful when a user
+  wires the server into their MCP host but has not yet issued a
+  transcription request.
+- Same privacy contract as the per-tool emit: opt-out via
+  `WHIPSCRIBE_MCP_TELEMETRY=0`, fire-and-forget, 2-second timeout,
+  silent on failure, no URLs / file paths / API keys / transcript content
+  in the payload.
+
 ## [0.1.1] — 2026-04-20
 
 ### Fixed
@@ -34,6 +48,7 @@ Initial beta release.
 - Not suitable for production use cases where transcription failure has legal, safety, or financial consequences.
 - See [`whipscribe.com/terms`](https://whipscribe.com/terms) for the full terms of service.
 
-[Unreleased]: https://github.com/neugence/whipscribe-mcp/compare/v0.1.1...HEAD
+[Unreleased]: https://github.com/neugence/whipscribe-mcp/compare/v0.1.2...HEAD
+[0.1.2]: https://github.com/neugence/whipscribe-mcp/releases/tag/v0.1.2
 [0.1.1]: https://github.com/neugence/whipscribe-mcp/releases/tag/v0.1.1
 [0.1.0]: https://github.com/neugence/whipscribe-mcp/releases/tag/v0.1.0

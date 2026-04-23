@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "whipscribe-mcp"
-version = "0.1.1"
+version = "0.1.2"
 description = "MCP server for Whipscribe transcription. Beta service — endpoints and quotas may change; not suitable for production."
 readme = "README.md"
 license = {file = "LICENSE"}

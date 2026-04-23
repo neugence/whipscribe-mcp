@@ -111,3 +111,77 @@ class TestEndpointApproved:
 
     def test_short_timeout(self) -> None:
         assert telemetry.TELEMETRY_TIMEOUT_SECONDS <= 5.0
+
+
+class TestEmitStartup:
+    """Per-process startup ping: once-and-only-once, gated on opt-out."""
+
+    def _reset_once_flag(self) -> None:
+        # Module-level guard that keeps emit_startup from firing twice per
+        # process. Tests reset it explicitly so each test starts fresh.
+        telemetry._startup_emitted = False
+
+    def test_disabled_emits_nothing(
+        self,
+        monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
+        self._reset_once_flag()
+        monkeypatch.setenv("WHIPSCRIBE_MCP_TELEMETRY", "0")
+        calls: list[object] = []
+        monkeypatch.setattr(
+            telemetry.httpx,
+            "post",
+            lambda *a, **kw: calls.append((a, kw)),
+        )
+        telemetry.emit_startup(version="0.1.2")
+        assert calls == [], "emit_startup must respect the opt-out env var"
+
+    def test_enabled_emits_once_per_process(
+        self,
+        monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
+        self._reset_once_flag()
+        monkeypatch.setenv("WHIPSCRIBE_MCP_TELEMETRY", "1")
+        calls: list[dict[str, object]] = []
+
+        def _spy(*args: object, **kwargs: object) -> None:
+            # httpx.post signature in emit() is (url, json=..., timeout=...).
+            calls.append({"args": args, "json": kwargs.get("json")})
+
+        monkeypatch.setattr(telemetry.httpx, "post", _spy)
+
+        telemetry.emit_startup(version="0.1.2")
+        telemetry.emit_startup(version="0.1.2")
+        telemetry.emit_startup(version="0.1.2")
+
+        assert len(calls) == 1, "emit_startup must fire exactly once per process"
+        body = calls[0]["json"]
+        assert isinstance(body, dict)
+        assert body["tool"] == telemetry.STARTUP_TOOL_NAME
+        assert body["duration_ms"] == 0
+        assert body["error_code"] is None
+        assert body["version"] == "0.1.2"
+        # Structural: no rogue fields that could leak user data.
+        assert set(body.keys()) == {
+            "install_hash",
+            "version",
+            "tool",
+            "duration_ms",
+            "error_code",
+            "os",
+            "python",
+        }
+
+    def test_swallows_network_failure(
+        self,
+        monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
+        self._reset_once_flag()
+        monkeypatch.setenv("WHIPSCRIBE_MCP_TELEMETRY", "1")
+
+        def _boom(*args: object, **kwargs: object) -> None:
+            raise telemetry.httpx.ConnectError("simulated offline")
+
+        monkeypatch.setattr(telemetry.httpx, "post", _boom)
+        # Must not raise, must not abort the server startup path.
+        telemetry.emit_startup(version="0.1.2")

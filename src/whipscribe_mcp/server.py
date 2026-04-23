@@ -28,6 +28,7 @@ from .cache import JobCache
 from .client import WhipscribeClient
 from .errors import BETA_NOTICE, ErrorObject, ToolError
 from .telemetry import emit as emit_telemetry
+from .telemetry import emit_startup as emit_startup_telemetry
 
 log = structlog.get_logger()
 
@@ -282,6 +283,11 @@ async def _dispatch(
 
 async def _serve() -> None:
     log.info("whipscribe_mcp_start", version=__version__)
+    # Emit a single per-process startup ping so the Grafana dashboard
+    # can distinguish "server booted" from "user called a tool". Same
+    # opt-out gate (WHIPSCRIBE_MCP_TELEMETRY) as every other telemetry
+    # call; fire-and-forget with a 2s timeout.
+    emit_startup_telemetry(version=__version__)
     async with WhipscribeClient() as client, JobCache() as cache:
         server = build_server(client=client, cache=cache)
         async with stdio_server() as (read_stream, write_stream):
