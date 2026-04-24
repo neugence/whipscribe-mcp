@@ -1,0 +1,37 @@
+{
+  "dxt_version": "0.1",
+  "name": "Whipscribe MCP",
+  "version": "0.1.2",
+  "description": "Transcribe audio and video files from URLs or local paths using Whipscribe's AI transcription service.",
+  "author": {
+    "name": "Neugence Technology Pvt. Ltd.",
+    "email": "contact@neugence.ai",
+    "url": "https://whipscribe.com"
+  },
+  "server": {
+    "type": "uv",
+    "command": "uvx",
+    "args": ["--from", "whipscribe-mcp@0.1.2", "whipscribe-mcp"],
+    "env": {
+      "WHIPSCRIBE_API_URL": {
+        "description": "Whipscribe API base URL",
+        "default": "https://app.whipscribe.com"
+      },
+      "WHIPSCRIBE_TOKEN": {
+        "description": "Your Whipscribe free-tier API token (optional — anon access available for short files)",
+        "required": false
+      }
+    }
+  },
+  "tools": [
+    {"name": "transcribe_url", "description": "Transcribe audio/video from a URL"},
+    {"name": "transcribe_file", "description": "Transcribe a local audio/video file"},
+    {"name": "get_job_status", "description": "Check transcription job status"},
+    {"name": "get_transcript", "description": "Retrieve completed transcript"},
+    {"name": "list_recent_jobs", "description": "List recent transcription jobs"}
+  ],
+  "privacy_policy_url": "https://whipscribe.com/privacy",
+  "homepage": "https://whipscribe.com",
+  "repository": "https://github.com/neugence/whipscribe_mcp",
+  "license": "Apache-2.0"
+}

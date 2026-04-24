@@ -20,7 +20,7 @@ from typing import Any
 import structlog
 from mcp.server import Server
 from mcp.server.stdio import stdio_server
-from mcp.types import TextContent, Tool
+from mcp.types import TextContent, Tool, ToolAnnotations
 
 from . import __version__
 from . import tools as tool_handlers
@@ -71,6 +71,11 @@ _TOOL_DEFINITIONS: list[Tool] = [
             "required": ["url"],
             "additionalProperties": False,
         },
+        annotations=ToolAnnotations(
+            title="Transcribe from URL",
+            readOnlyHint=False,
+            destructiveHint=False,
+        ),
     ),
     Tool(
         name="transcribe_file",
@@ -104,6 +109,11 @@ _TOOL_DEFINITIONS: list[Tool] = [
             "required": ["path"],
             "additionalProperties": False,
         },
+        annotations=ToolAnnotations(
+            title="Transcribe from File",
+            readOnlyHint=False,
+            destructiveHint=False,
+        ),
     ),
     Tool(
         name="get_job_status",
@@ -119,6 +129,10 @@ _TOOL_DEFINITIONS: list[Tool] = [
             "required": ["job_id"],
             "additionalProperties": False,
         },
+        annotations=ToolAnnotations(
+            title="Get Job Status",
+            readOnlyHint=True,
+        ),
     ),
     Tool(
         name="get_transcript",
@@ -145,6 +159,10 @@ _TOOL_DEFINITIONS: list[Tool] = [
             "required": ["job_id"],
             "additionalProperties": False,
         },
+        annotations=ToolAnnotations(
+            title="Get Transcript",
+            readOnlyHint=True,
+        ),
     ),
     Tool(
         name="list_recent_jobs",
@@ -166,6 +184,10 @@ _TOOL_DEFINITIONS: list[Tool] = [
             },
             "additionalProperties": False,
         },
+        annotations=ToolAnnotations(
+            title="List Recent Jobs",
+            readOnlyHint=True,
+        ),
     ),
 ]
 
