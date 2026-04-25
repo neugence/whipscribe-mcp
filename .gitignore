@@ -84,3 +84,6 @@ PLAN.md
 *.log
 .tox/
 htmlcov/
+
+# DXT bundles — distribute as GitHub Release assets, not tracked files
+*.dxt
