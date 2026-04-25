@@ -9,17 +9,14 @@
     "url": "https://whipscribe.com"
   },
   "server": {
-    "type": "uv",
-    "command": "uvx",
-    "args": ["--from", "whipscribe-mcp@0.1.2", "whipscribe-mcp"],
-    "env": {
-      "WHIPSCRIBE_API_URL": {
-        "description": "Whipscribe API base URL",
-        "default": "https://app.whipscribe.com"
-      },
-      "WHIPSCRIBE_TOKEN": {
-        "description": "Your Whipscribe free-tier API token (optional — anon access available for short files)",
-        "required": false
+    "type": "python",
+    "entry_point": "server.py",
+    "mcp_config": {
+      "command": "uvx",
+      "args": ["--from", "whipscribe-mcp@0.1.2", "whipscribe-mcp"],
+      "env": {
+        "WHIPSCRIBE_API_URL": "https://app.whipscribe.com",
+        "WHIPSCRIBE_TOKEN": "${WHIPSCRIBE_TOKEN}"
       }
     }
   },
@@ -30,8 +27,10 @@
     {"name": "get_transcript", "description": "Retrieve completed transcript"},
     {"name": "list_recent_jobs", "description": "List recent transcription jobs"}
   ],
-  "privacy_policy_url": "https://whipscribe.com/privacy",
   "homepage": "https://whipscribe.com",
-  "repository": "https://github.com/neugence/whipscribe-mcp",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/neugence/whipscribe-mcp"
+  },
   "license": "Apache-2.0"
 }
