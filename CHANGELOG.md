@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.3] — 2026-04-26
+
+### Added
+- `transcribe_urls_batch` tool — submit up to 20 URLs (YouTube, podcast, direct
+  media) in a single call. All jobs run concurrently; the tool returns when every
+  job is done or failed. Per-URL failures are captured in the result list without
+  aborting the batch. Designed for playlist / second-brain workflows where you
+  want to hand Claude a list of videos and get all transcripts at once.
+
 ## [0.1.2] — 2026-04-23
 
 ### Added

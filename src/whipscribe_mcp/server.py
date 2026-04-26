@@ -189,6 +189,49 @@ _TOOL_DEFINITIONS: list[Tool] = [
             readOnlyHint=True,
         ),
     ),
+    Tool(
+        name="transcribe_urls_batch",
+        description=(
+            "Transcribe a list of URLs (YouTube, podcast, direct media) concurrently. "
+            "Submit up to 20 URLs in one call; each job runs in parallel and the "
+            "tool returns when all are done or failed. Per-URL failures do not abort "
+            "the batch. Ideal for building a second-brain knowledge base from a "
+            "playlist or a curated list of videos."
+        ),
+        inputSchema={
+            "type": "object",
+            "properties": {
+                "urls": {
+                    "type": "array",
+                    "items": {"type": "string"},
+                    "minItems": 1,
+                    "maxItems": 20,
+                    "description": "List of media URLs to transcribe (max 20).",
+                },
+                "language": {
+                    "type": ["string", "null"],
+                    "description": "ISO 639-1 language code. Auto-detect when omitted.",
+                },
+                "diarize": {
+                    "type": "boolean",
+                    "default": False,
+                    "description": "Label speakers in every transcript.",
+                },
+                "word_timestamps": {
+                    "type": "boolean",
+                    "default": False,
+                    "description": "Include per-word timing in every transcript.",
+                },
+            },
+            "required": ["urls"],
+            "additionalProperties": False,
+        },
+        annotations=ToolAnnotations(
+            title="Batch Transcribe URLs",
+            readOnlyHint=False,
+            destructiveHint=False,
+        ),
+    ),
 ]
 
 
@@ -295,6 +338,15 @@ async def _dispatch(
         return await tool_handlers.list_recent_jobs(
             int(args.get("limit", 10)),
             cache=cache,
+        )
+    if name == "transcribe_urls_batch":
+        return await tool_handlers.transcribe_urls_batch(
+            args.get("urls", []),
+            client=client,
+            cache=cache,
+            language=args.get("language"),
+            diarize=bool(args.get("diarize", False)),
+            word_timestamps=bool(args.get("word_timestamps", False)),
         )
     raise ToolError(
         code="invalid_input",

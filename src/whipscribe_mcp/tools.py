@@ -532,10 +532,75 @@ async def list_recent_jobs(
     return {"ok": True, "jobs": jobs, "beta_notice": BETA_NOTICE}
 
 
+MAX_BATCH_URLS = 20
+
+
+async def transcribe_urls_batch(
+    urls: list[str],
+    *,
+    client: WhipscribeClient,
+    cache: JobCache | None = None,
+    language: str | None = None,
+    diarize: bool = False,
+    word_timestamps: bool = False,
+) -> dict[str, Any]:
+    """Transcribe a list of URLs concurrently.
+
+    Submits all jobs in parallel, polls them concurrently, and returns a
+    per-URL result list. Individual failures do not abort the batch.
+    """
+    if not isinstance(urls, list) or len(urls) == 0:
+        return {
+            "ok": False,
+            "error": {"code": "invalid_input", "message": "urls must be a non-empty list.", "retryable": False},
+            "beta_notice": BETA_NOTICE,
+        }
+    if len(urls) > MAX_BATCH_URLS:
+        return {
+            "ok": False,
+            "error": {
+                "code": "invalid_input",
+                "message": f"Maximum {MAX_BATCH_URLS} URLs per batch.",
+                "retryable": False,
+            },
+            "beta_notice": BETA_NOTICE,
+        }
+
+    async def _one(url: str) -> dict[str, Any]:
+        result = await transcribe_url(
+            url,
+            client=client,
+            cache=cache,
+            language=language,
+            diarize=diarize,
+            word_timestamps=word_timestamps,
+        )
+        out: dict[str, Any] = {"url": url}
+        out.update(result)
+        return out
+
+    per_url: list[dict[str, Any]] = list(
+        await asyncio.gather(*[_one(u) for u in urls], return_exceptions=False)
+    )
+
+    done_count = sum(1 for r in per_url if r.get("ok"))
+    failed_count = len(per_url) - done_count
+
+    return {
+        "ok": True,
+        "total": len(urls),
+        "done": done_count,
+        "failed": failed_count,
+        "results": per_url,
+        "beta_notice": BETA_NOTICE,
+    }
+
+
 __all__ = [
     "JobStatus",
     "ListJobsResult",
     "ListJobsSuccess",
+    "MAX_BATCH_URLS",
     "RecentJobPublic",
     "ToolFailure",
     "ToolResult",
@@ -546,4 +611,5 @@ __all__ = [
     "list_recent_jobs",
     "transcribe_file",
     "transcribe_url",
+    "transcribe_urls_batch",
 ]
