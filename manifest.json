@@ -1,7 +1,7 @@
 {
   "dxt_version": "0.1",
   "name": "Whipscribe MCP",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Transcribe audio and video files from URLs or local paths using Whipscribe's AI transcription service.",
   "author": {
     "name": "Neugence Technology Pvt. Ltd.",
@@ -13,7 +13,11 @@
     "entry_point": "server.py",
     "mcp_config": {
       "command": "uvx",
-      "args": ["--from", "whipscribe-mcp@0.1.2", "whipscribe-mcp"],
+      "args": [
+        "--from",
+        "whipscribe-mcp@0.1.2",
+        "whipscribe-mcp"
+      ],
       "env": {
         "WHIPSCRIBE_API_URL": "https://app.whipscribe.com",
         "WHIPSCRIBE_TOKEN": "${WHIPSCRIBE_TOKEN}"
@@ -21,11 +25,30 @@
     }
   },
   "tools": [
-    {"name": "transcribe_url", "description": "Transcribe audio/video from a URL"},
-    {"name": "transcribe_file", "description": "Transcribe a local audio/video file"},
-    {"name": "get_job_status", "description": "Check transcription job status"},
-    {"name": "get_transcript", "description": "Retrieve completed transcript"},
-    {"name": "list_recent_jobs", "description": "List recent transcription jobs"}
+    {
+      "name": "transcribe_url",
+      "description": "Transcribe audio/video from a URL"
+    },
+    {
+      "name": "transcribe_file",
+      "description": "Transcribe a local audio/video file"
+    },
+    {
+      "name": "get_job_status",
+      "description": "Check transcription job status"
+    },
+    {
+      "name": "get_transcript",
+      "description": "Retrieve completed transcript"
+    },
+    {
+      "name": "list_recent_jobs",
+      "description": "List recent transcription jobs"
+    },
+    {
+      "name": "transcribe_urls_batch",
+      "description": "Transcribe a list of URLs (YouTube, podcast, media) concurrently \u2014 one call for a whole playlist"
+    }
   ],
   "homepage": "https://whipscribe.com",
   "repository": {

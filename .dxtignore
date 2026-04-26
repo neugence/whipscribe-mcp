@@ -1,0 +1,27 @@
+# Private — never ship
+CLAUDE.local.md
+
+# Dev tooling
+.venv/
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+__pycache__/
+
+# Build artifacts
+dist/
+*.whl
+*.tar.gz
+
+# CI
+.github/
+
+# Test suite
+tests/
+
+# Other bundles
+*.dxt
+*.mcpb
+
+# Docs / repo admin
+uv.lock
