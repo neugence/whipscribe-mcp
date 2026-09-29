@@ -552,7 +552,8 @@ async def transcribe_urls_batch(
     if not isinstance(urls, list) or len(urls) == 0:
         return {
             "ok": False,
-            "error": {"code": "invalid_input", "message": "urls must be a non-empty list.", "retryable": False},
+            "error": {"code": "invalid_input", "message": "urls must be a non-empty list.",
+                      "retryable": False},
             "beta_notice": BETA_NOTICE,
         }
     if len(urls) > MAX_BATCH_URLS:
