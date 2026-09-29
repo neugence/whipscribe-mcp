@@ -1,5 +1,7 @@
 # whipscribe-mcp
 
+mcp-name: io.github.neugence/whipscribe-mcp
+
 MCP server for [Whipscribe](https://whipscribe.com) — transcribe audio and video from a URL or local file via Claude Desktop, Claude Code, Cursor, Windsurf, or any MCP-compatible client.
 
 > ### ⚠️ Beta service

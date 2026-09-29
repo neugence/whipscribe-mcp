@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.4] — 2026-09-28
+
+### Added
+- `server.json` and the `mcp-name` line for the official MCP Registry listing (`io.github.neugence/whipscribe-mcp`).
+
 ## [0.1.3] — 2026-04-26
 
 ### Added

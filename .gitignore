@@ -87,3 +87,7 @@ htmlcov/
 
 # DXT bundles — distribute as GitHub Release assets, not tracked files
 *.dxt
+
+# registry publisher binary + local bundles
+mcp-publisher
+*.mcpb
