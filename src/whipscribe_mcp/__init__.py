@@ -10,7 +10,7 @@ import sys
 
 import structlog
 
-__version__ = "0.1.4"
+__version__ = "0.1.5"
 
 
 def _configure_logging() -> None:

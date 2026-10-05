@@ -1,7 +1,7 @@
 {
   "dxt_version": "0.1",
   "name": "Whipscribe MCP",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "Transcribe audio and video files from URLs or local paths using Whipscribe's AI transcription service.",
   "author": {
     "name": "Neugence Technology Pvt. Ltd.",

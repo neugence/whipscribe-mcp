@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.5] — 2026-10-05
+
+### Fixed
+- Fresh installs crashed at start (`'Server' object has no attribute 'list_tools'`) once the `mcp` library published 2.x. The dependency is now `mcp>=1.0.0,<2`.
+
 ## [0.1.4] — 2026-09-28
 
 ### Added
