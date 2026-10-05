@@ -101,7 +101,7 @@ On failure:
 
 | Variable | Required | Default | Purpose |
 |---|---|---|---|
-| `WHIPSCRIBE_API_KEY` | No | — | API key (unlocks paid quota; anonymous free tier works without it) |
+| `WHIPSCRIBE_API_KEY` | No | — | API key (links jobs to your account and its credits; without it, every recording still gets a free preview) |
 | `WHIPSCRIBE_API_BASE` | No | `https://whipscribe.com/api/v1` | Override API base URL (e.g. for staging) |
 | `WHIPSCRIBE_MCP_TELEMETRY` | No | `1` | Set to `0` to disable anonymous usage telemetry |
 | `WHIPSCRIBE_MCP_POLL_TIMEOUT_SECONDS` | No | `600` | Max seconds `transcribe_url` / `transcribe_file` waits before returning the job_id with a non-terminal status |
@@ -127,7 +127,7 @@ The anonymization algorithm is in this repo (`src/whipscribe_mcp/telemetry.py`).
 
 ## Pricing
 
-See [whipscribe.com/pricing](https://whipscribe.com/pricing) for current rates. The free tier works without an API key at reduced rate limits.
+See [whipscribe.com/pricing](https://whipscribe.com/pricing) for current rates. Every recording gets a free preview, with or without an API key; credit packs start at $4 and never expire, and the Workspace plan is $19 a month (fair use 300 hours a month).
 
 ## License
 

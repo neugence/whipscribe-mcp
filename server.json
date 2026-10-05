@@ -18,7 +18,7 @@
       "environmentVariables": [
         {
           "name": "WHIPSCRIBE_API_KEY",
-          "description": "WhipScribe API key (optional; unlocks paid quota, the anonymous free tier works without it)",
+          "description": "WhipScribe API key (optional; links jobs to your account and its credits, every recording gets a free preview without it)",
           "isRequired": false,
           "isSecret": true
         }
