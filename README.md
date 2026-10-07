@@ -127,7 +127,7 @@ The anonymization algorithm is in this repo (`src/whipscribe_mcp/telemetry.py`).
 
 ## Pricing
 
-See [whipscribe.com/pricing](https://whipscribe.com/pricing) for current rates. Every recording gets a free preview, with or without an API key; credit packs start at $4 and never expire, and the Workspace plan is $19 a month (fair use 300 hours a month).
+See [whipscribe.com/pricing](https://whipscribe.com/pricing) for current rates. Every recording gets a free preview, with or without an API key; credit packs start at $6 and never expire, and the Workspace plan is $19 a month (fair use 300 hours a month).
 
 ## License
 
