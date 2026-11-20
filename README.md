@@ -27,6 +27,10 @@ pip install whipscribe-mcp
 
 Requires Python 3.10+.
 
+### Hosted server (no install)
+
+WhipScribe also runs this server for you at `https://whipscribe.com/mcp` (streamable HTTP, OAuth sign-in with your WhipScribe account). Add it as a remote / custom connector in any client that supports remote MCP servers, such as Claude or ChatGPT.
+
 ## Claude Desktop
 
 Add to `claude_desktop_config.json`:
@@ -127,7 +131,7 @@ The anonymization algorithm is in this repo (`src/whipscribe_mcp/telemetry.py`).
 
 ## Pricing
 
-See [whipscribe.com/pricing](https://whipscribe.com/pricing) for current rates. Every recording gets a free preview, with or without an API key; credit packs start at $6 and never expire, and the Workspace plan is $19 a month (fair use 300 hours a month).
+See [whipscribe.com/pricing](https://whipscribe.com/pricing) for current rates. Every recording gets a free preview, with or without an API key; credit packs start at $4 for 300 minutes ($18 for 3,000 and $32 for 6,000; the $32 pack includes API access) and never expire, and the Workspace plan is $19 a month (fair use 300 hours a month).
 
 ## License
 
@@ -136,5 +140,5 @@ See [whipscribe.com/pricing](https://whipscribe.com/pricing) for current rates. 
 ## Contact
 
 - Website: [whipscribe.com](https://whipscribe.com)
-- Email: [contact@neugence.ai](mailto:contact@neugence.ai)
+- Email: [contact@whipscribe.com](mailto:contact@whipscribe.com)
 - Issues: [github.com/neugence/whipscribe-mcp/issues](https://github.com/neugence/whipscribe-mcp/issues)

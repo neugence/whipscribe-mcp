@@ -10,10 +10,10 @@ readme = "README.md"
 license = {file = "LICENSE"}
 requires-python = ">=3.10"
 authors = [
-    {name = "Neugence Technology Pvt. Ltd.", email = "contact@neugence.ai"},
+    {name = "Neugence Technology Pvt. Ltd.", email = "contact@whipscribe.com"},
 ]
 maintainers = [
-    {name = "Neugence Technology Pvt. Ltd.", email = "contact@neugence.ai"},
+    {name = "Neugence Technology Pvt. Ltd.", email = "contact@whipscribe.com"},
 ]
 keywords = [
     "mcp",
