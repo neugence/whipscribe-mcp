@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- Registry entry (`server.json` 0.1.6, schema 2025-12-11) lists the hosted server `https://whipscribe.com/mcp` under `remotes`; the PyPI package stays 0.1.5.
+- README: packs start at $4 for 300 minutes ($18 / 3,000, $32 / 6,000 with API access); support contact is the whipscribe.com address; hosted-server section.
+- `manifest.json`: pins 0.1.5 and passes `WHIPSCRIBE_API_KEY` (it pinned 0.1.2 and set variables the server does not read).
+- `glama.json` for the Glama ownership claim.
+
 ## [0.1.5] — 2026-10-05
 
 ### Fixed

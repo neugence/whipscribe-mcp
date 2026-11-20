@@ -1,12 +1,12 @@
 {
-  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-09-29/server.schema.json",
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "io.github.neugence/whipscribe-mcp",
   "description": "Transcribe audio/video files or URLs via the WhipScribe cloud API and fetch the transcript.",
   "repository": {
     "url": "https://github.com/neugence/whipscribe-mcp",
     "source": "github"
   },
-  "version": "0.1.5",
+  "version": "0.1.6",
   "websiteUrl": "https://whipscribe.com",
   "packages": [
     {
@@ -14,7 +14,9 @@
       "registryBaseUrl": "https://pypi.org",
       "identifier": "whipscribe-mcp",
       "version": "0.1.5",
-      "transport": { "type": "stdio" },
+      "transport": {
+        "type": "stdio"
+      },
       "environmentVariables": [
         {
           "name": "WHIPSCRIBE_API_KEY",
@@ -23,6 +25,12 @@
           "isSecret": true
         }
       ]
+    }
+  ],
+  "remotes": [
+    {
+      "type": "streamable-http",
+      "url": "https://whipscribe.com/mcp"
     }
   ]
 }
